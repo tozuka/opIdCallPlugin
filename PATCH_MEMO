@@ -1,0 +1,118 @@
+とりあえず手動パッチメモ
+========================
+もうちょっとちゃんとしたい（opIdCallPluginの有無に関わらず動作に支障ないみたいな）ので
+ちゃんとしたら正式にパッチpull reqする
+
+■日記
+plugins/opDiaryPlugin/lib/action/opDiaryPluginDiaryActions.class.php 
+
+    if ($form->isValid())
+    {
+      $diary = $form->save();
+
++      IdCallUtil::check_atcall(
++        $diary->body,
++        $this->member->name.'さんの日記',
++        '@diary_show?id='.$diary->id
++      );
+
+      $this->redirect('@diary_show?id='.$diary->id);
+    }
+
+
+■日記コメント
+plugins/opDiaryPlugin/lib/action/opDiaryPluginDiaryCommentActions.class.php 
+
+    if ($this->form->isValid())
+    {
+      $this->form->save();
+
++      IdCallUtil::check_atcall(
++        $this->form->getObject()->body,
++        $this->member->name.'さんの日記コメント',
++        '@diary_show?id='.$this->diary->id.'&comment_count='.$this->diary->countDiaryComments(true)
++      );
+
+      $this->redirectToDiaryShow();
+    }
+
+
+■コミュイベント
+plugins/opCommunityTopicPlugin/lib/action/opCommunityTopicPluginEventActions.class.php 
+
+    if ($form->isValid())
+    {
+      $communityEvent = $form->save();
+
++      IdCallUtil::check_atcall(
++        $communityEvent->body,
++        'コミュニティイベント '.$communityEvent->name,
++        '@communityEvent_show?id='.$communityEvent->getId()
++      );
+
+      $this->redirect('@communityEvent_show?id='.$communityEvent->getId());
+    }
+
+
+■コミュイベントコメント
+plugins/opCommunityTopicPlugin/lib/action/opCommunityTopicPluginEventCommentActions.class.php
+
+        $this->form->save();
+
++        IdCallUtil::check_atcall(
++          $this->form->getObject()->body,
++          'コミュニティイベント '.$this->communityEvent->name.' へのコメント',
++          '@communityEvent_show?id='.$this->communityEvent->getId()
++        );
+
+        $this->redirect('@communityEvent_show?id='.$this->communityEvent->getId());
+
+
+■コミュトピ
+plugins/opCommunityTopicPlugin/lib/action/opCommunityTopicPluginTopicActions.class.php
+
+    if ($form->isValid())
+    {
+      $communityEvent = $form->save();
+
++      IdCallUtil::check_atcall(
++        $communityTopic->body,
++        'コミュニティトピック '.$communityTopic->name,
++        '@communityTopic_show?id='.$communityTopic->getId()
++      );
+
+      $this->redirect('@communityEvent_show?id='.$communityEvent->getId());
+    }
+
+
+■コミュトピコメント
+plugins/opCommunityTopicPlugin/lib/action/opCommunityTopicPluginTopicCommentActions.class.php
+
+      $this->form->save();
+
++      IdCallUtil::check_atcall(
++        $this->form->getObject()->body,
++        'コミュニティトピック '.$this->communityTopic->name.' へのコメント',
++        '@communityTopic_show?id='.$this->communityTopic->getId()
++      );
+
+      $this->redirect('@communityTopic_show?id='.$this->communityTopic->getId());
+
+
+■アクティビティ
+lib/action/opMemberAction.class.php
+  in executeUpdateActivity()
+
+      if ($this->form->isValid())
+      {
+        $this->form->save();
+
++        IdCallUtil::check_atcall(
++          $this->form->getObject()->body,
++          'アクティビティ',
++          '@homepage'
++        );
+
+        if ($request->isXmlHttpRequest())
+        {
+
