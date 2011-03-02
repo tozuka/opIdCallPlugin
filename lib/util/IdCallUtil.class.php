@@ -97,6 +97,11 @@ class IdCallUtil
 
   private static function extract_callees($text)
   {
+    if (0 === strncmp($text, '%nocall', 7))
+    {
+      return array();
+    }
+
     preg_match_all('/(ktai|m|)@([-._0-9A-Za-z]+)/',
       $text, $matches1, PREG_PATTERN_ORDER);
 
