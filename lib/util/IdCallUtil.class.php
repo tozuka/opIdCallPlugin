@@ -49,7 +49,7 @@ class IdCallUtil
     $callees = array();
     foreach ($matches as $i => $match)
     {
-      $nickname = preg_replace('/(さん|くん|ちゃん|ぽん|のすけ|っち)$/u', '', $match);
+      $nickname = preg_replace('/(様|殿|氏|君|さま|さん|くん|ちゃん|ぽん|のすけ|っち)$/u', '', $match);
       $isKtai = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? true : false;
       $callees[] = array($nickname, $isKtai);
     }
@@ -58,7 +58,7 @@ class IdCallUtil
   }
 
 
-  private static function eliminate($matches)
+  private static function eliminate($matches, $test_mode = false)
   { 
     if (is_null(self::$rev_mapping)) return array();
 
@@ -74,10 +74,11 @@ class IdCallUtil
         $persons = self::$rev_mapping[$nickname];
         foreach ($persons as $person)
         {
-          if (!isset($checked[$person]))
+          $key = ($isKtai ? 'm@' : '@').$person;
+          if (!isset($checked[$key]))
           {
             $calls[] = array($person, $isKtai);
-            $checked[$person] = true;
+            $checked[$key] = true;
           }
         }
       }
@@ -89,46 +90,17 @@ class IdCallUtil
   
     foreach ($unsolvedNicknames as $nickname => $dummy)
     {
-      error_log('unsolved nickname: '.$nickname);
+      $errorMsg = 'unsolved nickname: '.$nickname;
+
+      if ($test_mode)
+      {
+        throw new Exception($errorMsg);
+      }
+
+      error_log($errorMsg);
     }
 
     return $calls;
-  }
-
-  private static function notify_call($callee, $msg)
-  {
-    echo '----' . PHP_EOL;
-    echo self::$nicknames[$callee].'さん'.PHP_EOL;
-    echo PHP_EOL;
-    echo $msg;
-    echo PHP_EOL;
-  }
-
-  // 通知文を生成
-  private static function generate_notify_call_message($text, $title, $url, $author = null)
-  {
-    $msg = '';
-
-    if ($title)
-    {
-      $msg .= $title . ' で';
-    }
-    $msg .= '呼ばれているかもです。'.PHP_EOL;
-
-    if ($url)
-    {
-      $msg .= $url . PHP_EOL;
-    }
-
-    $msg .= PHP_EOL;
-
-    foreach (split("\n", $text) as $line)
-    {
-      $msg .= '> ' . $line . PHP_EOL;
-      $msg .= '...'.PHP_EOL; break;
-    }
-
-    return $msg;
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
@@ -141,17 +113,13 @@ class IdCallUtil
       $author = sfContext::getInstance()->getUser()->getMember()->getName();
     }
 
-    $callees = self::eliminate( self::extract_callees($text) );
+    $callees = self::eliminate(self::extract_callees($text), $test_mode);
     if (empty($callees)) return;
 
     if ($test_mode)
     {
-      if (!empty($callees))
-      {
-        $msg = self::generate_notify_call_message($text, $place, $url, $author);
-        foreach ($callees as $callee) self::notify_call($callee[0], $msg);
-      }
-      sort($callees);
+      if (!empty($callees)) sort($callees);
+
       return $callees;
     }
     else

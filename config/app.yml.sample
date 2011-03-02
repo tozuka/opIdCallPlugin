@@ -1,6 +1,5 @@
 all:
   id_call:
     mapping:
-      1: [手嶋, tejima, all]
-      2: [大平, o-hira, ohira, all]
+      1: [OpenPNE君, openpne-kun, admin]
 
