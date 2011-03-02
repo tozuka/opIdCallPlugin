@@ -74,10 +74,15 @@ class IdCallUtil
   {
     foreach ($mapping as $person => $candidates)
     {
-      self::$nicknames[$person] = $candidates[0];
+      if ($useFirstOneAsNickname)
+      {
+        self::$nicknames[$person] = self::remove_suffix($candidates[0]);
+      }
 
       foreach ($candidates as $cand)
       {
+        $cand = self::remove_suffix($cand);
+
         if (isset(self::$rev_mapping[$cand]))
         {
           self::$rev_mapping[$cand][] = $person;
@@ -104,14 +109,17 @@ class IdCallUtil
     $callees = array();
     foreach ($matches as $i => $match)
     {
-      $nickname = preg_replace('/(様|殿|氏|君|さま|さん|くん|ちゃん|ぽん|のすけ|っち)$/u', '', $match);
       $isKtai = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? true : false;
-      $callees[] = array($nickname, $isKtai);
+      $callees[] = array(self::remove_suffix($match), $isKtai);
     }
 
     return $callees;
   }
 
+  private static function remove_suffix($name)
+  {
+    return preg_replace('/(様|殿|氏|君|さま|さん|くん|ちゃん|ぽん|のすけ|っち)$/u', '', $name);
+  }
 
   private static function eliminate($matches, $test_mode = false)
   { 
@@ -207,6 +215,7 @@ class IdCallUtil
           'idCall', $callee_mail_address,
           opConfig::get('admin_mail_address'), $params
         );
+        // error_log(sprintf('[DEBUG] send idcall message to #%d (%s)', $memberId, $callee_mail_address));
       }
     }
   }
