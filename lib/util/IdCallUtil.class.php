@@ -11,11 +11,66 @@ class IdCallUtil
   {
     if (!is_null(self::$rev_mapping)) return;
 
+    // memberテーブルから、名前を取得
+    $rs = Doctrine::getTable('Member')
+      ->createQuery()
+      ->where('is_active = ? AND is_login_rejected = ?')
+      ->execute(array(1, 0));
+
+    $mapping = array();
+    foreach ($rs as $member)
+    {
+      $mapping[$member->id] = self::split_ids($member->name);
+    }
+    self::set_mapping($mapping, true); // ここの先頭項目を通知時の呼称とする
+
+    // ymlファイルの設定を読み込んで追加
     $mapping = sfConfig::get('app_id_call_mapping', array());
-    self::set_mapping($mapping);
+    if (!is_null($mapping))
+    {
+      self::set_mapping($mapping, false);
+    }
+
+    // プロフィール設定で本人が指定したニックネームやコールIDがあれば追加
+    $profileNames = array('fullname', 'nickname', 'call_id');
+    foreach ($profileNames as $name)
+    {
+      self::load_mapping_from_profile($name);
+    }
   }
 
-  public static function set_mapping($mapping)
+  private static function split_ids($str)
+  {
+    $mapping = array();
+    foreach (preg_split('/[\s,　]+/u', $str) as $callId)
+    {
+      $callId = preg_replace('/^[@＠]/u', '', $callId);
+      $mapping[] = $callId;
+    }
+
+    return $mapping;
+  }
+
+  public static function load_mapping_from_profile($profileName)
+  {
+    $profile = Doctrine::getTable('Profile')->retrieveByName($profileName);
+    if (!$profile) return false;
+
+    $rs = Doctrine::getTable('MemberProfile')
+      ->createQuery()
+      ->where('profile_id = ?')
+      ->execute(array($profile->id));
+
+    $mapping = array();
+    foreach ($rs as $memberProfile)
+    {
+      $memberId = $memberProfile->getMemberId();
+      $mapping[$memberId] = self::split_ids($memberProfile->getValue());
+    }
+    self::set_mapping($mapping, false);
+  }
+
+  public static function set_mapping($mapping, $useFirstOneAsNickname = true)
   {
     foreach ($mapping as $person => $candidates)
     {
@@ -137,6 +192,8 @@ class IdCallUtil
         $isKtai = $callee[1];
 
         $member = Doctrine::getTable('Member')->find($memberId);
+        if (!$member) continue;
+
         $callee_mail_address = $member->getConfig($isKtai ? 'mobile_address' : 'pc_address');
 
         $params = array(
