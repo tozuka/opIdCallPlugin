@@ -105,7 +105,7 @@ class IdCallUtil
   }
 
   // 通知文を生成
-  private static function generate_notify_call_message($text, $title, $url)
+  private static function generate_notify_call_message($text, $title, $url, $author = null)
   {
     $msg = '';
 
@@ -132,9 +132,14 @@ class IdCallUtil
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
-  public static function check_atcall($text, $place = null, $url = null, $test_mode = false)
+  public static function check_atcall($text, $place = null, $url = null, $author = null, $test_mode = false)
   {
     self::init();
+
+    if (is_null($author))
+    {
+      $author = sfContext::getInstance()->getUser()->getMember()->getName();
+    }
 
     $callees = self::eliminate( self::extract_callees($text) );
     if (empty($callees)) return;
@@ -143,7 +148,7 @@ class IdCallUtil
     {
       if (!empty($callees))
       {
-        $msg = self::generate_notify_call_message($text, $place, $url);
+        $msg = self::generate_notify_call_message($text, $place, $url, $author);
         foreach ($callees as $callee) self::notify_call($callee[0], $msg);
       }
       sort($callees);
@@ -151,7 +156,8 @@ class IdCallUtil
     }
     else
     {
-      $text_ = '';
+      $text_ = $author . '≫' . PHP_EOL;
+
       foreach (split("\n", $text) as $line)
       {
         $text_ .= '＞ ' . $line . PHP_EOL;
@@ -170,6 +176,7 @@ class IdCallUtil
           'text' => $text_,
           'place' => $place,
           'url' => $url,
+          'author' => $author,
         );
         opMailSend::sendTemplateMail(
           'idCall', $callee_mail_address,
