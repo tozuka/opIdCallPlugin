@@ -11,3 +11,5 @@ opIdCallPlugin
   - [DONE]アクティビティでIDコールした場合、誰に呼ばれたか通知文で分からないので何とかする
   - 有志の皆さんに使い込んでもらう
   - [DONE]Apache Licenseで公開
+  - [DONE]先頭に "%nocall" の７文字を記せばIDコールを抑制できる機能を追加
+
