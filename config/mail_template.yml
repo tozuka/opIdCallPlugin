@@ -7,14 +7,14 @@ pc:
         - "[{{ op_config.sns_name }}] ID Call Notification"
         - |
           Someone seems to call {{ nickname }} in {{ place }}!
-          {% app_url_for('pc_frontend', url, true) %}
+          {% app_url_for('pc_frontend', route, true) %}
 
           {{ text }}
       ja_JP:
         - "[{{ op_config.sns_name }}] IDコールのお知らせ"
         - |
           {{ place }} で{{ nickname }}さんが呼ばれているようです。
-          {% app_url_for('pc_frontend', url, true) %}
+          {% app_url_for('pc_frontend', route, true) %}
 
           {{ text }}
     variables:
@@ -22,7 +22,7 @@ pc:
       nickname: "ニックネーム"
       place: "場所"
       text: "テキスト"
-      url: "URL"
+      route: "ルート"
 
 mobile:
   idCall:
@@ -33,14 +33,14 @@ mobile:
         - "[{{ op_config.sns_name }}] ID Call Notification"
         - |
           Someone seems to call {{ nickname }} in {{ place }}!
-          {% app_url_for('mobile_frontend', url, true) %}
+          {% app_url_for('mobile_frontend', route, true) %}
 
           {{ text }}
       ja_JP:
         - "[{{ op_config.sns_name }}] IDコールのお知らせ"
         - |
           {{ place }} で{{ nickname }}さんが呼ばれているようです。
-          {% app_url_for('mobile_frontend', url, true) %}
+          {% app_url_for('mobile_frontend', route, true) %}
 
           {{ text }}
     variables:
@@ -48,5 +48,5 @@ mobile:
       nickname: "ニックネーム"
       place: "場所"
       text: "テキスト"
-      url: "URL"
+      route: "ルーティング"
 
