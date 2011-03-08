@@ -172,7 +172,7 @@ class IdCallUtil
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
-  public static function check_atcall($text, $place = null, $url = null, $author = null, $test_mode = false)
+  public static function check_at_call($text, $place = null, $route = null, $author = null, $test_mode = false)
   {
     self::init();
 
@@ -213,7 +213,7 @@ class IdCallUtil
           'nickname' => self::$nicknames[$memberId],
           'text' => $text_,
           'place' => $place,
-          'url' => $url,
+          'route' => $route,
           'author' => $author,
         );
         opMailSend::sendTemplateMail(
@@ -223,6 +223,86 @@ class IdCallUtil
         // error_log(sprintf('[DEBUG] send idcall message to #%d (%s)', $memberId, $callee_mail_address));
       }
     }
+  }
+
+  // 旧API（なにもしない）
+  public static function check_atcall($text, $place = null, $route = null, $author = null, $test_mode = false)
+  {
+  }
+
+  public function processFormPostSave($event)
+  {
+    $form = $event->getSubject();
+    $author = sfContext::getInstance()->getUser()->getMember()->getName();
+    $i18n = sfContext::getInstance()->getI18N();
+
+    switch (get_class($form))
+    {
+      case 'DiaryForm':
+        $diary = $form->getObject();
+
+        $text = $diary->body;
+        $place = $author.'さんの'.$i18n->__('Diary');
+        $route = '@diary_show?id='.$diary->id;
+        break;
+
+      case 'DiaryCommentForm':
+        $diaryComment = $form->getObject();
+        $diary = $diaryComment->Diary;
+
+        $text = $diaryComment->body;
+        $place = $author.'さんの'.$i18n->__('Diary').$i18n->__('Comment');
+        $route = '@diary_show?id='.$diary->id.'&comment_count='.$diary->countDiaryComments(true);
+        break;
+
+      case 'CommunityEventForm':
+        $communityEvent = $form->getObject();
+
+        $text = $communityEvent->body;
+        $place = $i18n->__('Community Events').' '.$communityEvent->name;
+        $route = '@communityEvent_show?id='.$communityEvent->getId();
+        break;
+
+      case 'CommunityEventCommentForm':
+        $communityEventComment = $form->getObject();
+        $communityEvent = $communityEventComment->CommunityEvent;
+
+        $text = $communityEventComment->body;
+        $place = $i18n->__('Community Events').' '.$communityEvent->name.' への'.$i18n->__('Comment');
+        $route = '@communityEvent_show?id='.$communityEvent->getId();
+        break;
+
+      case 'CommunityTopicForm':
+        $communityTopic = $form->getObject();
+
+        $text = $communityTopic->body;
+        $place = $i18n->__('Community Topics').' '.$communityTopics->name;
+        $route = '@communityTopic_show?id='.$communityTopic->getId();
+        break;
+
+      case 'CommunityTopicCommentForm':
+        $communityTopicComment = $form->getObject();
+        $communityTopic = $communityTopicComment->CommunityTopic;
+
+        $text = $communityTopicComment->body;
+        $place = $i18n->__('Community Topics').' '.$communityTopic->name.' への'.$i18n->__('Comment');
+        $route = '@communityTopic_show?id='.$communityTopic->getId();
+        break;
+
+      case 'ActivityDataForm':
+        $activityData = $form->getObject();
+
+        $text = $activityData->body;
+        $place = 'アクティビティ';
+        $route = 'friend/showActivity';
+        break;
+
+      default:
+        error_log('form.post_save event from '.get_class($form).' is not supported.');
+        return;
+    } 
+
+    IdCallUtil::check_at_call($text, $place, $route, $author);
   }
 
   public static function debug($msg)

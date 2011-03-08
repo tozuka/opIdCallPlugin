@@ -1,0 +1,14 @@
+--- lib/vendor/symfony/lib/form/addon/sfFormObject.class.php	2010-10-20 20:28:51.000000000 +0900
++++ lib/vendor/symfony/lib/form/addon/sfFormObject.class.php	2011-03-08 21:23:38.000000000 +0900
+@@ -129,6 +129,11 @@
+ 
+       $this->doSave($con);
+ 
++      if (self::$dispatcher)
++      {
++        self::$dispatcher->notify(new sfEvent($this, 'form.post_save'));
++      }
++
+       $con->commit();
+     }
+     catch (Exception $e)

@@ -3,3 +3,12 @@ opIdCallPlugin
   - m@+ID で呼ばれた人に携帯メールでお知らせ
   by tozuka@tejimaya.com
 
+■sfFormObject へのパッチが必要です
+OpenPNE のルートディレクトリにて
+$ patch -p0 < plugins/opIdCallPlugin/form-post_save.patch
+を実行してください。
+opUpdateNotifierPluginなどの導入で既に同等のパッチが適用済みの場合は不要です。
+
+※以前のバージョンでopDiaryPlugin, opCommunityTopicPlugin等に手動パッチを適用している場合は、
+deprecated/PATCH_MEMO を参考に元に戻してください。
+（手動パッチは通知を行わない旧APIを利用しているため、残っていても実害はありません）
