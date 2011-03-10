@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.9.0" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+    http://pear.php.net/dtd/tasks-1.0.xsd
+    http://pear.php.net/dtd/package-2.0
+    http://pear.php.net/dtd/package-2.0.xsd">
+ <name>opIdCallPlugin</name>
+ <channel>plugins.openpne.jp</channel>
+ <summary>@+ID で呼ばれた人にメールでお知らせ</summary>
+ <description>・@+ID で呼ばれた人にメールでお知らせ
+・m@+ID で呼ばれた人に携帯メールでお知らせ
+
+※本体symfony部分（sfFormObjectクラス）へのパッチ（同梱）が必要です</description>
+ <lead>
+  <name>tozuka</name>
+  <user>tozuka</user>
+  <email />
+  <active>yes</active>
+ </lead>
+ <date>2011-03-10</date>
+ <time>12:28:57</time>
+ <version>
+  <release>0.8.0</release>
+  <api>0.8.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license>Apache</license>
+ <notes>
+First beta release.
+ </notes>
+ <contents>
+  <dir baseinstalldir="/" name="/">
+   <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml" role="data" />
+   <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml.sample" role="data" />
+   <file baseinstalldir="/" md5sum="4ab4c0f6112f548810ce09e8f80484d6" name="config/config.php" role="data" />
+   <file baseinstalldir="/" md5sum="845e8b0554328f352058411964cb9b8f" name="config/mail_template.yml" role="data" />
+   <file baseinstalldir="/" md5sum="0d2f1e451e446d64f7b0b8f5453aa15c" name="deprecated/PATCH_MEMO" role="data" />
+   <file baseinstalldir="/" md5sum="b92b17e3d3d66753ab63ba84f127952a" name="lib/util/IdCallUtil.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="25b04d5e2306bbc79824f120dc88d181" name="test/bootstrap/database.php" role="data" />
+   <file baseinstalldir="/" md5sum="2089e76b9d0ae0fd4d222ee37ea68cb5" name="test/bootstrap/functional.php" role="data" />
+   <file baseinstalldir="/" md5sum="4bfa4b596e946c8a283410a2e2ba4315" name="test/bootstrap/unit.php" role="data" />
+   <file baseinstalldir="/" md5sum="8471fade12b0760fab6715ffb8b8f9e4" name="test/fixtures/test_data.yml" role="data" />
+   <file baseinstalldir="/" md5sum="8a98cacfcc151f2808c399543fd52679" name="test/functional/mobile_frontend/skeletonActionsTest.php" role="data" />
+   <file baseinstalldir="/" md5sum="1faa199e87c1ce270e86edee706b37fd" name="test/functional/pc_frontend/skeletonActionsTest.php" role="data" />
+   <file baseinstalldir="/" md5sum="52440ab0abcc01c98551283f1e9942e1" name="test/unit/model/SkeletonTest.php" role="data" />
+   <file baseinstalldir="/" md5sum="0df724386a1c443a8708be1df36172fe" name="test/unit/util/IdCallUtilTest.php" role="data" />
+   <file baseinstalldir="/" md5sum="37c2f437f8e6fc841e49ea2fcdf8ba81" name="form-post_save.patch" role="data" />
+   <file baseinstalldir="/" md5sum="3b83ef96387f14655fc854ddc3c6bd57" name="LICENSE" role="data" />
+   <file baseinstalldir="/" md5sum="a3e1a83b4f367c756564fa315991ccbb" name="README" role="data" />
+   <file baseinstalldir="/" md5sum="cfe8c4f4d0f1facb1bf6c25a7185ecbd" name="TODO" role="data" />
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.2.3</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <phprelease />
+ <changelog>
+  <release>
+   <version>
+    <release>0.8.0</release>
+    <api>0.8.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-03-10</date>
+   <license>Apache</license>
+   <notes>
+First beta release.
+   </notes>
+  </release>
+ </changelog>
+</package>
