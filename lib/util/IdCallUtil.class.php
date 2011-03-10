@@ -42,10 +42,13 @@ class IdCallUtil
   private static function split_ids($str)
   {
     $mapping = array();
-    foreach (preg_split('/[\s,　]+/u', $str) as $callId)
+    foreach (preg_split('/[\s,　（）]+/u', $str) as $callId)
     {
       $callId = preg_replace('/^[@＠]/u', '', $callId);
-      $mapping[] = $callId;
+      if ('' !== $callId)
+      {
+        $mapping[] = $callId;
+      }
     }
 
     return $mapping;
@@ -295,6 +298,18 @@ class IdCallUtil
         $text = $activityData->body;
         $place = 'アクティビティ';
         $route = 'friend/showActivity';
+        break;
+
+      case 'KakiageForm':
+        $kakiage = $form->getObject();
+        $targetDate = $kakiage->getTargetDate();
+
+        $text = $kakiage->body;
+        $place = $author.'さんの '.$targetDate.' のかき揚げ';
+        $route = sprintf('@kakiage_date?year=%d&month=%d&day=%d',
+          substr($targetDate, 0, 4),
+          substr($targetDate, 5, 7),
+          substr($targetDate, 8, 10));
         break;
 
       default:
