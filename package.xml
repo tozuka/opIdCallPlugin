@@ -6,10 +6,20 @@
  <name>opIdCallPlugin</name>
  <channel>plugins.openpne.jp</channel>
  <summary>@+ID で呼ばれた人にメールでお知らせ</summary>
- <description>・@+ID で呼ばれた人にメールでお知らせ
-・m@+ID で呼ばれた人に携帯メールでお知らせ
+ <description>@+ID で呼ばれた人にメールでお知らせ
+m@+ID で呼ばれた人に携帯メールでお知らせ
 
-※本体symfony部分（sfFormObjectクラス）へのパッチ（同梱）が必要です</description>
+※本体symfony部分（sfFormObjectクラス）へのパッチ（同梱）が必要です
+
+■インストール
+
+$ ./symfony opPlugin:install opIdCallPlugin -r 0.8.0
+$ patch -p0 &lt; plugins/opIdCallPlugin/form-post_save.patch
+$ ./symfony openpne:migrate --target=opIdCallPlugin
+
+マイグレーションを（まだ）書いてないので、３番目のは（まだ）意味ないです。これから書きます。
+
+see http://openpne3.com/wiki/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3:opIdCallPlugin</description>
  <lead>
   <name>tozuka</name>
   <user>tozuka</user>
@@ -17,10 +27,10 @@
   <active>yes</active>
  </lead>
  <date>2011-03-10</date>
- <time>12:28:57</time>
+ <time>23:04:10</time>
  <version>
-  <release>0.8.0</release>
-  <api>0.8.0</api>
+  <release>0.8.1</release>
+  <api>0.8.1</api>
  </version>
  <stability>
   <release>beta</release>
@@ -28,7 +38,7 @@
  </stability>
  <license>Apache</license>
  <notes>
-First beta release.
+Added migration data.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -36,8 +46,10 @@ First beta release.
    <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml.sample" role="data" />
    <file baseinstalldir="/" md5sum="4ab4c0f6112f548810ce09e8f80484d6" name="config/config.php" role="data" />
    <file baseinstalldir="/" md5sum="845e8b0554328f352058411964cb9b8f" name="config/mail_template.yml" role="data" />
+   <file baseinstalldir="/" md5sum="282698df9145cba38edbc5f329442a13" name="data/fixtures/000_revision.yml" role="data" />
+   <file baseinstalldir="/" md5sum="1ba973405f5f5c99d5a4e3fbe662483f" name="data/fixtures/001_profile_call_id.yml" role="data" />
    <file baseinstalldir="/" md5sum="0d2f1e451e446d64f7b0b8f5453aa15c" name="deprecated/PATCH_MEMO" role="data" />
-   <file baseinstalldir="/" md5sum="b92b17e3d3d66753ab63ba84f127952a" name="lib/util/IdCallUtil.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="c7f3e5425f77e67ddb40c700799a2ef6" name="lib/util/IdCallUtil.class.php" role="data" />
    <file baseinstalldir="/" md5sum="25b04d5e2306bbc79824f120dc88d181" name="test/bootstrap/database.php" role="data" />
    <file baseinstalldir="/" md5sum="2089e76b9d0ae0fd4d222ee37ea68cb5" name="test/bootstrap/functional.php" role="data" />
    <file baseinstalldir="/" md5sum="4bfa4b596e946c8a283410a2e2ba4315" name="test/bootstrap/unit.php" role="data" />
@@ -77,6 +89,21 @@ First beta release.
    <license>Apache</license>
    <notes>
 First beta release.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.8.1</release>
+    <api>0.8.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-03-10</date>
+   <license>Apache</license>
+   <notes>
+Added migration data.
    </notes>
   </release>
  </changelog>
