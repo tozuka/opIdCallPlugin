@@ -317,7 +317,7 @@ class IdCallUtil
       case 'ActivityDataForm':
         $activityData = $form->getObject();
 
-        $delaySec = (int)sfConfig::get('op_idcall_delaysec', 1);
+        $delaySec = (int)sfConfig::get('op_idcall_delaysec', 0);
         if ($delaySec > 0)
         {
           $result = IdCallUtil::future_check_at_call(
