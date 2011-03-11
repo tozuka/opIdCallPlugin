@@ -345,7 +345,7 @@ class IdCallUtil
   // 非同期コールで呼ばれる
   public function processAfterDelay($objectClass, $objectId, $delaySec, $culture)
   {
-    if ($delaySec > 30) $delaySec = 30;
+    if ($delaySec > 25) $delaySec = 25;
     sleep($delaySec);
 
     switch ($objectClass)
