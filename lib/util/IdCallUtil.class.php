@@ -172,7 +172,7 @@ class IdCallUtil
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
-  public static function check_at_call($text, $place = null, $route = null, $author = null, $test_mode = false)
+  public static function check_at_call($text, $place = null, $route = null, $author = null, $url = null, $culture = null, $test_mode = false)
   {
     self::init();
 
@@ -215,14 +215,39 @@ class IdCallUtil
           'place' => $place,
           'route' => $route,
           'author' => $author,
+          'url' => $url,
         );
+
+        if ($culture) sfContext::getInstance()->getUser()->setCulture($culture);
+
         opMailSend::sendTemplateMail(
-          'idCall', $callee_mail_address,
-          opConfig::get('admin_mail_address'), $params
+          $url ? 'idCallWithURL' : 'idCall',
+          $callee_mail_address,
+          opConfig::get('admin_mail_address'),
+          $params
         );
         // error_log(sprintf('[DEBUG] send idcall message to #%d (%s)', $memberId, $callee_mail_address));
       }
     }
+  }
+  private static function future_check_at_call($objectClass, $objectId, $delaySec, $culture = null)
+  {
+    $fp = fsockopen('localhost', 80, $errno, $errstr, 5);
+    if (!$fp)
+    {
+      return false;
+    }
+
+    $host = sfContext::getInstance()->getRequest()->getHost();
+    $path = sprintf('/api.php/delayedMail/send?class=%s&id=%d&delay=%d&culture=%s',
+      $objectClass, $objectId, $delaySec, $culture);
+    $out  = 'GET '.$path.' HTTP/1.0'."\r\n";
+    $out .= 'Host: '.$host."\r\n";
+    $out .= 'Connection: Close'."\r\n\r\n";
+    fwrite($fp, $out);
+    fclose($fp);
+
+    return true;
   }
 
   // 旧API（なにもしない）
@@ -292,6 +317,18 @@ class IdCallUtil
       case 'ActivityDataForm':
         $activityData = $form->getObject();
 
+        $delaySec = (int)sfConfig::get('op_idcall_delaysec', 1);
+        if ($delaySec > 0)
+        {
+          $result = IdCallUtil::future_check_at_call(
+            'ActivityData',
+            $activityData->getId(),
+            $delaySec,
+            $culture = sfContext::getInstance()->getUser()->getCulture()
+          );
+          if ($result) return;
+        }
+
         $text = $activityData->body;
         $place = 'アクティビティ';
         $route = 'friend/showActivity';
@@ -303,6 +340,41 @@ class IdCallUtil
     } 
 
     IdCallUtil::check_at_call($text, $place, $route, $author);
+  }
+
+  // 非同期コールで呼ばれる
+  public function processAfterDelay($objectClass, $objectId, $delaySec, $culture)
+  {
+    if ($delaySec > 30) $delaySec = 30;
+    sleep($delaySec);
+
+    switch ($objectClass)
+    {
+      case 'ActivityData':
+        $activityData = Doctrine::getTable('ActivityData')->find($objectId);
+        if ($activityData)
+        {
+          $text = $activityData->body;
+          $author = $activityData->Member->name;
+          $place = 'アクティビティ';
+          $route = 'friend/showActivity';
+
+          $host = sfContext::getInstance()->getRequest()->getHost();
+          $url = 'http://'.$host.'/friend/showActivity';
+
+          error_log("check_at_call (+$delaySec sec) now...");
+          IdCallUtil::check_at_call($text, $place, $route, $author, $url, $culture);
+        }
+        else
+        {
+          error_log("target object <$objectClass:$objectId> is dismissed...");
+        }
+        break;
+
+      default:
+        //error_log('after_delay for '.$objectClass.' is not supported.');
+        return;
+    } 
   }
 
   public static function debug($msg)

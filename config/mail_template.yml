@@ -24,6 +24,31 @@ pc:
       text: "テキスト"
       route: "ルート"
 
+  idCallWithURL:
+    caption: "ID Call Notification"
+    configurable: false
+    sample:
+      en:
+        - "[{{ op_config.sns_name }}] ID Call Notification"
+        - |
+          Someone seems to call {{ nickname }} in {{ place }}!
+          {{ url }}
+
+          {{ text }}
+      ja_JP:
+        - "[{{ op_config.sns_name }}] IDコールのお知らせ"
+        - |
+          {{ place }} で{{ nickname }}さんが呼ばれているようです。
+          {{ url }}
+
+          {{ text }}
+    variables:
+      "op_config.sns_name": "SNS 名"
+      nickname: "ニックネーム"
+      place: "場所"
+      text: "テキスト"
+      url: "URL"
+
 mobile:
   idCall:
     caption: "ID Call Notification"
@@ -48,5 +73,30 @@ mobile:
       nickname: "ニックネーム"
       place: "場所"
       text: "テキスト"
-      route: "ルーティング"
+      route: "ルート"
+
+  idCallWithURL:
+    caption: "ID Call Notification"
+    configurable: false
+    sample:
+      en:
+        - "[{{ op_config.sns_name }}] ID Call Notification"
+        - |
+          Someone seems to call {{ nickname }} in {{ place }}!
+          {{ url }}
+
+          {{ text }}
+      ja_JP:
+        - "[{{ op_config.sns_name }}] IDコールのお知らせ"
+        - |
+          {{ place }} で{{ nickname }}さんが呼ばれているようです。
+          {{ url }}
+
+          {{ text }}
+    variables:
+      "op_config.sns_name": "SNS 名"
+      nickname: "ニックネーム"
+      place: "場所"
+      text: "テキスト"
+      url: "URL"
 
