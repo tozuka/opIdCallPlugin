@@ -234,6 +234,12 @@ class IdCallUtil
 
   public function processFormPostSave($event)
   {
+    $userInstanceName = version_compare(OPENPNE_VERSION, '3.5.0-dev', '>') ? 'opSecurityUser' : 'sfOpenPNESecurityUser';
+    if (!(sfContext::getInstance()->getUser() instanceof $userInstanceName))
+    {
+      return false;
+    }
+
     $form = $event->getSubject();
     $author = sfContext::getInstance()->getUser()->getMember()->getName();
     $i18n = sfContext::getInstance()->getI18N();
