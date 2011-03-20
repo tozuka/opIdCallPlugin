@@ -40,8 +40,14 @@ class opIdCallActions extends sfActions
 
   private function isCommunityPostable($community)
   {
-    if (!$community || !$community->isPrivilegeBelong($this->member->id))
+    if (!$community)
     {
+      return false;
+    }
+    if (!$community->isPrivilegeBelong($this->member->id))
+    {
+      $this->sendJoinCommunityNotification($community, $this->member);
+
       return false;
     }
 
@@ -269,5 +275,20 @@ class opIdCallActions extends sfActions
   private function generateBody($toName)
   {
     return sprintf(">%s%s [i:110]\n%s", $this->targetMemberName, $this->member->getConfig(MemberConfigIdCallForm::ID_CALL_MAIL_POST_NAME_SUFFIX, '殿'), $this->body);
+  }
+
+  private function sendJoinCommunityNotification(Community $community, Member $member)
+  {
+    $requestContext = $this->getRequest()->getRequestContext();
+    if (!opToolKit::isMobileEmailAddress($requestContext['from_address']))
+    {
+      return false;
+    }
+
+    $params = array(
+      'nickname' => $member->name,
+      'community' => $community,
+    );
+    opMailSend::sendTemplateMail('idCallJoinCommunityNotification', $requestContext['from_address'], opConfig::get('admin_mail_address'), $params);
   }
 }

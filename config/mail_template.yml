@@ -57,4 +57,30 @@ mobile:
       place: "場所"
       text: "テキスト"
       route: "ルーティング"
+  idCallJoinCommunityNotification:
+    caption: "ID Call Join Community Notification"
+    configurable: false
+    sample:
+      en:
+        - "[{{ op_config.sns_name }}] ID Call Join Community Notification"
+        - |
+          Hi, {{ nickname }}
+
+          Since you did not participate in this community ({{ community.name }}),
+          failed to post mail.
+          Please take this opportunity to join this community ({{ community.name }}).
+          {% app_url_for('mobile_frontend', '@community_home?id='~community.id, true) %}
+      ja_JP:
+        - "[{{ op_config.sns_name }}] IDコール コミュニティ参加のお知らせ"
+        - |
+          {{ nickname }} さん
+
+          参加していないコミュニティ({{ community.name }})のトピックまたはイベントへの
+          メール投稿が失敗しました。
+          この機会にぜひともこのコミュニティ({{ community.name }})に参加してみてください。
+          {% app_url_for('mobile_frontend', '@community_home?id='~community.id, true) %}
+    variables:
+      "op_config.sns_name": "SNS 名"
+      nickname: "ニックネーム"
+      community: "コミュニティのオブジェクト"
 
