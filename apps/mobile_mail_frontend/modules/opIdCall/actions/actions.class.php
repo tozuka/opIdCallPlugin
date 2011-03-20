@@ -12,7 +12,7 @@ class opIdCallActions extends sfActions
   public function preExecute()
   {
     $this->member = $this->getRoute()->getMember();
-    if ($this->member)
+    if (!$this->member)
     {
       exit;
     }
@@ -100,7 +100,7 @@ class opIdCallActions extends sfActions
     {
       return sfView::NONE;
     }
-    if (!$this->isDiaryPostable($diaryComment->Diary))
+    if (!$this->isDiaryPostable($diary = $diaryComment->Diary))
     {
       return sfView::NONE;
     }
@@ -252,15 +252,18 @@ class opIdCallActions extends sfActions
     return $communityTopicComment->save();
   }
 
-  private function postActivityData($replyActivityData)
+  private function postActivityData($activityData)
   {
-    $activityData = new ActivityData();
-    $activityData->setInReplyTo($replyActivityData);
-    $activityData->setMember($this->member);
-    $activityData->setBody($this->generateBody());
-    $activityData->setIsPc($replyActivityData->is_pc);
-    $activityData->setIsMobile($replyActivityData->is_mobile);
-    $activityData->setPublicFlag($this->member->getConfig(MemberConfigIdCallForm::ID_CALL_ACTIVITY_PUBLIC_FLAG, ActivityDataTable::PUBLIC_FLAG_SNS));
+    $options = array(
+      'public_flag' => $this->member->getConfig(
+        MemberConfigIdCallForm::ID_CALL_ACTIVITY_PUBLIC_FLAG,
+        ActivityDataTable::PUBLIC_FLAG_SNS
+      ),
+      'is_pc' => $activityData->is_pc,
+      'is_mobile' => $activityData->is_mobile,
+    );
+
+    return Doctrine_Core::getTable('ActivityData')->updateActivity($this->member->id, $this->generateBody(), $options);
   }
 
   private function generateBody($toName)
