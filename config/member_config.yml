@@ -1,0 +1,6 @@
+idCall:
+  _attributes:
+    caption: "IdCall Configuration"
+    enable_pc:     true
+    enable_mobile: true
+  idCall:

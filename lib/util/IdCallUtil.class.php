@@ -172,7 +172,7 @@ class IdCallUtil
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
-  public static function check_at_call($text, $place = null, $route = null, $author = null, $test_mode = false)
+  public static function check_at_call($text, $place = null, $route = null, $author = null, $reply_route_params = null, $test_mode = false)
   {
     self::init();
 
@@ -192,6 +192,7 @@ class IdCallUtil
     }
     else
     {
+      sfContext::getInstance()->getConfiguration()->loadHelpers('opIdCallUtil');
       $text_ = $author . '≫' . PHP_EOL;
 
       foreach (split("\n", $text) as $line)
@@ -215,6 +216,7 @@ class IdCallUtil
           'place' => $place,
           'route' => $route,
           'author' => $author,
+          'reply_to' => $isKtai ? op_id_call_generate_mail($reply_route_params, $member) : false,
         );
         opMailSend::sendTemplateMail(
           'idCall', $callee_mail_address,
@@ -244,6 +246,9 @@ class IdCallUtil
         $text = $diary->body;
         $place = $author.'さんの'.$i18n->__('Diary');
         $route = '@diary_show?id='.$diary->id;
+        $reply_route_params = array('mail_op_id_call_diary_reply' => array(
+          'id' => $diary->id,
+        ));
         break;
 
       case 'DiaryCommentForm':
@@ -253,6 +258,9 @@ class IdCallUtil
         $text = $diaryComment->body;
         $place = $author.'さんの'.$i18n->__('Diary').$i18n->__('Comment');
         $route = '@diary_show?id='.$diary->id.'&comment_count='.$diary->countDiaryComments(true);
+        $reply_route_params = array('mail_op_id_call_diary_comment_reply' => array(
+          'id' => $diaryComment->id,
+        ));
         break;
 
       case 'CommunityEventForm':
@@ -261,6 +269,9 @@ class IdCallUtil
         $text = $communityEvent->body;
         $place = $i18n->__('Community Events').' '.$communityEvent->name;
         $route = '@communityEvent_show?id='.$communityEvent->getId();
+        $reply_route_params = array('mail_op_id_call_community_event_reply' => array(
+            'id' => $communityEvent->id,
+        ));
         break;
 
       case 'CommunityEventCommentForm':
@@ -270,6 +281,9 @@ class IdCallUtil
         $text = $communityEventComment->body;
         $place = $i18n->__('Community Events').' '.$communityEvent->name.' への'.$i18n->__('Comment');
         $route = '@communityEvent_show?id='.$communityEvent->getId();
+        $reply_route_params = array('mail_op_id_call_community_event_comment_reply' => array(
+          'id' => $communityEventComment->id,
+        ));
         break;
 
       case 'CommunityTopicForm':
@@ -278,6 +292,9 @@ class IdCallUtil
         $text = $communityTopic->body;
         $place = $i18n->__('Community Topics').' '.$communityTopics->name;
         $route = '@communityTopic_show?id='.$communityTopic->getId();
+        $reply_route_params = array('mail_op_id_call_community_topic_reply' => array(
+          'id' => $communityTopic->id,
+        ));
         break;
 
       case 'CommunityTopicCommentForm':
@@ -287,6 +304,9 @@ class IdCallUtil
         $text = $communityTopicComment->body;
         $place = $i18n->__('Community Topics').' '.$communityTopic->name.' への'.$i18n->__('Comment');
         $route = '@communityTopic_show?id='.$communityTopic->getId();
+        $reply_route_params = array('mail_op_id_call_community_topic_comment_reply' => array(
+          'id' => $communityTopicComment->id,
+        ));
         break;
 
       case 'ActivityDataForm':
@@ -295,6 +315,9 @@ class IdCallUtil
         $text = $activityData->body;
         $place = 'アクティビティ';
         $route = 'friend/showActivity';
+        $reply_route_params = array('mail_op_id_call_activity_reply' => array(
+          'id' => $activityData->id,
+        ));
         break;
 
       default:
@@ -302,7 +325,7 @@ class IdCallUtil
         return;
     } 
 
-    IdCallUtil::check_at_call($text, $place, $route, $author);
+    IdCallUtil::check_at_call($text, $place, $route, $author, $reply_route_params);
   }
 
   public static function debug($msg)

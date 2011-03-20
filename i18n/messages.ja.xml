@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<xliff version="1.0">
+  <file orginal="global" source-language="en" datatype="plaintext">
+    <body>
+      <trans-unit id="1">
+        <source>IdCall Configuration</source>
+        <target>IDコール設定</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>Id call mail post activity public flag</source>
+        <target>IDコール メール投稿時 アクティビティのデフォルト公開範囲設定</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>Id call mail post nickname suffix</source>
+        <target>IDコール メール投稿時 相手の敬称</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

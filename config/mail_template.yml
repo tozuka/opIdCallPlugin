@@ -36,6 +36,10 @@ mobile:
           {% app_url_for('mobile_frontend', route, true) %}
 
           {{ text }}
+
+          {% if reply_to %}
+          Reply to -> {{ reply_to }}
+          {% endif %}
       ja_JP:
         - "[{{ op_config.sns_name }}] IDコールのお知らせ"
         - |
@@ -43,6 +47,10 @@ mobile:
           {% app_url_for('mobile_frontend', route, true) %}
 
           {{ text }}
+
+          {% if reply_to %}
+          ID コールの返信先 -> {{ reply_to }}
+          {% endif %}
     variables:
       "op_config.sns_name": "SNS 名"
       nickname: "ニックネーム"
