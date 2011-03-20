@@ -9,11 +9,14 @@
  */
 class opIdCallActions extends sfActions
 {
+  const LOG_SUFFIX = '[mail post]';
+
   public function preExecute()
   {
     $this->member = $this->getRoute()->getMember();
     if (!$this->member)
     {
+      opIdCallToolkit::log(sprintf('%s %s', self::LOG_SUFFIX, 'undefined member'));
       exit;
     }
 
@@ -24,6 +27,7 @@ class opIdCallActions extends sfActions
     }
     catch (Exception $e)
     {
+      opIdCallToolkit::log(sprintf('%s %s', self::LOG_SUFFIX, 'message: '.$e->getMessage.', code:'.$e->getCode()));
       exit;
     }
   }
@@ -32,20 +36,32 @@ class opIdCallActions extends sfActions
   {
     if (!$diary || !$diary->isViewable($this->member->id))
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d can\'t post diary comment in diary_id:%d', self::LOG_SUFFIX, $this->member->id, $diary->id));
+
       return false;
     }
 
-    return !$this->isAccessBlocked($diary->member_id);
+    if ($this->isAccessBlocked($diary->member_id))
+    {
+      opIdCallToolkit::log(sprintf('%s member_id:%d can\'t post diary comment in diary_id:%d, becouse access blocked', self::LOG_SUFFIX, $this->member->id, $diary->id));
+
+      return false;
+    }
+
+    return true;
   }
 
   private function isCommunityPostable($community)
   {
     if (!$community)
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined community', self::LOG_SUFFIX, $this->member->id));
+
       return false;
     }
     if (!$community->isPrivilegeBelong($this->member->id))
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post not joined community community_id:%d', self::LOG_SUFFIX, $this->member->id, $community->id));
       $this->sendJoinCommunityNotification($community, $this->member);
 
       return false;
@@ -58,10 +74,19 @@ class opIdCallActions extends sfActions
   {
     if (!$activityData)
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined activity', self::LOG_SUFFIX, $this->member->id));
+
       return false;
     }
 
-    return !$this->isAccessBlocked($activityData->member_id);
+    if ($this->isAccessBlocked($activityData->member_id))
+    {
+      opIdCallToolkit::log(sprintf('%s member_id:%d can\'t post activity comment, becouse access blocked', self::LOG_SUFFIX, $this->member->id));
+
+      return false;
+    }
+
+    return true;
   }
 
   private function isAccessBlocked($member_id_to)
@@ -104,6 +129,8 @@ class opIdCallActions extends sfActions
     $diaryComment = Doctrine::getTable('DiaryComment')->find($request['id']);
     if (!$diaryComment)
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined diary comment', self::LOG_SUFFIX, $this->member->id));
+
       return sfView::NONE;
     }
     if (!$this->isDiaryPostable($diary = $diaryComment->Diary))
@@ -127,6 +154,8 @@ class opIdCallActions extends sfActions
     $communityEvent = Doctrine::getTable('CommunityEvent')->find($request['id']);
     if (!$communityEvent)
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined event', self::LOG_SUFFIX, $this->member->id));
+
       return sfView::NONE;
     }
     if (!$this->isCommunityPostable($communityEvent->Community))
@@ -150,6 +179,8 @@ class opIdCallActions extends sfActions
     $communityEventComment = Doctrine::getTable('CommunityEventComment')->find($request['id']);
     if (!$communityEventComment || !($communityEvent = $communityEventComment->CommunityEvent))
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined event or event comment', self::LOG_SUFFIX, $this->member->id));
+
       return sfView::NONE;
     }
     if (!$this->isCommunityPostable($communityEvent->Community))
@@ -173,6 +204,8 @@ class opIdCallActions extends sfActions
     $communityTopic = Doctrine::getTable('CommunityTopic')->find($request['id']);
     if (!$communityTopic)
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined topic', self::LOG_SUFFIX, $this->member->id));
+
       return sfView::NONE;
     }
     if (!$this->isCommunityPostable($communityTopic->Community))
@@ -196,6 +229,8 @@ class opIdCallActions extends sfActions
     $communityTopicComment = Doctrine::getTable('CommunityTopicComment')->find($request['id']);
     if (!$communityTopicComment || !($communityTopic = $communityTopicComment->CommunityTopic))
     {
+      opIdCallToolkit::log(sprintf('%s member_id:%d post undefined topic or topic comment', self::LOG_SUFFIX, $this->member->id));
+
       return sfView::NONE;
     }
     if (!$this->isCommunityPostable($communityTopic->Community))
@@ -230,36 +265,58 @@ class opIdCallActions extends sfActions
 
   private function postDiaryComment($diary)
   {
+    opIdCallToolkit::log(sprintf('%s <start> member_id:%d post diary comment', self::LOG_SUFFIX, $this->member->id));
     $diaryComment = new DiaryComment();
     $diaryComment->setDiary($diary);
     $diaryComment->setMember($this->member);
     $diaryComment->setBody($this->generateBody());
 
-    return $diaryComment->save();
+    $result = $diaryComment->save();
+    if ($result)
+    {
+      opIdCallToolkit::log(sprintf('%s <end> member_id:%d post diary comment diary_comment_id:%d', self::LOG_SUFFIX, $this->member->id, $result->id));
+    }
+
+    return $result;
   }
 
   private function postCommunityEventComment($communityEvent)
   {
+    opIdCallToolkit::log(sprintf('%s <start> member_id:%d post event comment', self::LOG_SUFFIX, $this->member->id));
     $communityEventComment = new CommunityEventComment();
     $communityEventComment->setCommunityEvent($communityEvent);
     $communityEventComment->setMember($this->member);
     $communityEventComment->setBody($this->generateBody());
 
-    return $communityEventComment->save();
+    $result = $communityEventComment->save();
+    if ($result)
+    {
+      opIdCallToolkit::log(sprintf('%s <end> member_id:%d post event comment event_comment_id:%d', self::LOG_SUFFIX, $this->member->id, $result->id));
+    }
+
+    return $result;
   }
 
   private function postCommunityTopicComment($communityTopic)
   {
+    opIdCallToolkit::log(sprintf('%s <start> member_id:%d post topic comment', self::LOG_SUFFIX, $this->member->id));
     $communityTopicComment = new CommunityTopicComment();
     $communityTopicComment->setCommunityTopic($communityTopic);
     $communityTopicComment->setMember($this->member);
     $communityTopicComment->setBody($this->generateBody());
 
-    return $communityTopicComment->save();
+    $result = $communityTopicComment->save();
+    if ($result)
+    {
+      opIdCallToolkit::log(sprintf('%s <end> member_id:%d post topic comment topic_comment_id:%d', self::LOG_SUFFIX, $this->member->id, $result->id));
+    }
+
+    return $result;
   }
 
   private function postActivityData($activityData)
   {
+    opIdCallToolkit::log(sprintf('%s <start> member_id:%d post activity data', self::LOG_SUFFIX, $this->member->id));
     $options = array(
       'public_flag' => $this->member->getConfig(
         MemberConfigIdCallForm::ID_CALL_ACTIVITY_PUBLIC_FLAG,
@@ -269,7 +326,14 @@ class opIdCallActions extends sfActions
       'is_mobile' => $activityData->is_mobile,
     );
 
-    return Doctrine_Core::getTable('ActivityData')->updateActivity($this->member->id, $this->generateBody(), $options);
+    $result = Doctrine_Core::getTable('ActivityData')->updateActivity($this->member->id, $this->generateBody(), $options);
+
+    if ($result)
+    {
+      opIdCallToolkit::log(sprintf('%s <end> member_id:%d post activity data activity_data_id:%d', self::LOG_SUFFIX, $this->member->id, $result->id));
+    }
+
+    return $result;
   }
 
   private function generateBody($toName)
