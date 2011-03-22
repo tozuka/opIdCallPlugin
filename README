@@ -1,7 +1,8 @@
 opIdCallPlugin
   - @+ID で呼ばれた人にメールでお知らせ
   - m@+ID で呼ばれた人に携帯メールでお知らせ
-  by tozuka@tejimaya.com
+  - 携帯メールへのお知らせに対しメールで返信
+  by tozuka@tejimaya.com + urabe@tejimaya.com
 
 ■sfFormObject へのパッチが必要です
 OpenPNE のルートディレクトリにて
