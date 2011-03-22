@@ -26,11 +26,11 @@ see http://openpne3.com/wiki/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3:opIdC
   <email />
   <active>yes</active>
  </lead>
- <date>2011-03-10</date>
- <time>23:04:10</time>
+ <date>2011-03-22</date>
+ <time>17:55:12</time>
  <version>
-  <release>0.8.1</release>
-  <api>0.8.1</api>
+  <release>0.8.2</release>
+  <api>0.8.2</api>
  </version>
  <stability>
   <release>beta</release>
@@ -38,18 +38,25 @@ see http://openpne3.com/wiki/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3:opIdC
  </stability>
  <license>Apache</license>
  <notes>
-Added migration data.
+supports mobile mail reply
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
-   <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml" role="data" />
+   <file baseinstalldir="/" md5sum="0f0b05e459fd5976791367529db0c30b" name="apps/mobile_mail_frontend/config/routing.yml" role="data" />
+   <file baseinstalldir="/" md5sum="2a51707b0b40dc318f4d6d9d321f29bc" name="apps/mobile_mail_frontend/modules/opIdCall/actions/actions.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="d41d8cd98f00b204e9800998ecf8427e" name="apps/mobile_mail_frontend/modules/opIdCall/templates/indexSuccess.php" role="data" />
    <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml.sample" role="data" />
    <file baseinstalldir="/" md5sum="4ab4c0f6112f548810ce09e8f80484d6" name="config/config.php" role="data" />
-   <file baseinstalldir="/" md5sum="845e8b0554328f352058411964cb9b8f" name="config/mail_template.yml" role="data" />
+   <file baseinstalldir="/" md5sum="818ebb4bb73f86102ddec0971803ce56" name="config/mail_template.yml" role="data" />
+   <file baseinstalldir="/" md5sum="c4adb21384f25d7b40e27c47769e578d" name="config/member_config.yml" role="data" />
    <file baseinstalldir="/" md5sum="282698df9145cba38edbc5f329442a13" name="data/fixtures/000_revision.yml" role="data" />
    <file baseinstalldir="/" md5sum="1ba973405f5f5c99d5a4e3fbe662483f" name="data/fixtures/001_profile_call_id.yml" role="data" />
    <file baseinstalldir="/" md5sum="0d2f1e451e446d64f7b0b8f5453aa15c" name="deprecated/PATCH_MEMO" role="data" />
-   <file baseinstalldir="/" md5sum="c7f3e5425f77e67ddb40c700799a2ef6" name="lib/util/IdCallUtil.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="914c3c08f8e11003b68ed77bf1f8c12b" name="i18n/messages.ja.xml" role="data" />
+   <file baseinstalldir="/" md5sum="0d4e9f9be653de3c02919b92785c2974" name="lib/form/MemberConfigForm/MemberConfigIdCallForm.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="c95f71d986f43924e8a2a2fe2760aa78" name="lib/helper/opIdCallUtilHelper.php" role="data" />
+   <file baseinstalldir="/" md5sum="3e911810649e819c5aafdf12bfe026d3" name="lib/util/IdCallUtil.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="2c5d89b3c546e93925bada51b8d10c8a" name="lib/util/opIdCallToolKit.class.php" role="data" />
    <file baseinstalldir="/" md5sum="25b04d5e2306bbc79824f120dc88d181" name="test/bootstrap/database.php" role="data" />
    <file baseinstalldir="/" md5sum="2089e76b9d0ae0fd4d222ee37ea68cb5" name="test/bootstrap/functional.php" role="data" />
    <file baseinstalldir="/" md5sum="4bfa4b596e946c8a283410a2e2ba4315" name="test/bootstrap/unit.php" role="data" />
@@ -60,7 +67,7 @@ Added migration data.
    <file baseinstalldir="/" md5sum="0df724386a1c443a8708be1df36172fe" name="test/unit/util/IdCallUtilTest.php" role="data" />
    <file baseinstalldir="/" md5sum="37c2f437f8e6fc841e49ea2fcdf8ba81" name="form-post_save.patch" role="data" />
    <file baseinstalldir="/" md5sum="3b83ef96387f14655fc854ddc3c6bd57" name="LICENSE" role="data" />
-   <file baseinstalldir="/" md5sum="a3e1a83b4f367c756564fa315991ccbb" name="README" role="data" />
+   <file baseinstalldir="/" md5sum="3ffb827a59ffd21911be2c1c4019d03f" name="README" role="data" />
    <file baseinstalldir="/" md5sum="cfe8c4f4d0f1facb1bf6c25a7185ecbd" name="TODO" role="data" />
   </dir>
  </contents>
@@ -104,6 +111,21 @@ First beta release.
    <license>Apache</license>
    <notes>
 Added migration data.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.8.2</release>
+    <api>0.8.2</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-03-22</date>
+   <license>Apache</license>
+   <notes>
+supports mobile mail reply
    </notes>
   </release>
  </changelog>
