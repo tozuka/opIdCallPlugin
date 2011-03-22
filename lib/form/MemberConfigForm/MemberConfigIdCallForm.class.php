@@ -33,7 +33,7 @@ class MemberConfigIdCallForm extends MemberConfigForm
       'label'    => 'Id call mail post activity public flag',
     ));
     $this->widgetSchema[self::ID_CALL_MAIL_POST_NAME_SUFFIX] = new sfWidgetFormInput(array(
-      'default'  => $this->member->getConfig(self::ID_CALL_MAIL_POST_NAME_SUFFIX, '殿'),
+      'default'  => $this->member->getConfig(self::ID_CALL_MAIL_POST_NAME_SUFFIX, 'さん'),
       'label'    => 'Id call mail post nickname suffix',
     ));
 

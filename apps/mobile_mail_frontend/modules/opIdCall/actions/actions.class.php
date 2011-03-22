@@ -338,7 +338,7 @@ class opIdCallActions extends sfActions
 
   private function generateBody($toName)
   {
-    return sprintf(">%s%s [i:110]\n%s", $this->targetMemberName, $this->member->getConfig(MemberConfigIdCallForm::ID_CALL_MAIL_POST_NAME_SUFFIX, '殿'), $this->body);
+    return sprintf(">%s%s [i:110]\n%s", $this->targetMemberName, $this->member->getConfig(MemberConfigIdCallForm::ID_CALL_MAIL_POST_NAME_SUFFIX, 'さん'), $this->body);
   }
 
   private function sendJoinCommunityNotification(Community $community, Member $member)
