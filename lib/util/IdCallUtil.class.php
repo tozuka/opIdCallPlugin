@@ -23,9 +23,18 @@ class IdCallUtil
       return;
     }
 
+    $me = sfContext::getInstance()->getUser()->getMember();
+    $rev_mapping_cache = $me->getConfig('id_call_rev_mapping');
+    if ($rev_mapping_cache)
+    {
+      self::$rev_mapping = unserialize($rev_mapping_cache);
+      self::$nicknames = unserialize($me->getConfig('id_call_nicknames'));
+      return;
+    }
+
     self::$rev_mapping = array();
     self::$nicknames = array();
-    self::$valid_recipients = self::validRecipients();
+    self::$valid_recipients = self::validRecipients($me->getId());
 
     $mapping = array();
     foreach (self::$valid_recipients as $memberId => $name)
@@ -47,6 +56,9 @@ class IdCallUtil
     {
       self::load_mapping_from_profile($name);
     }
+
+    $me->setConfig('id_call_rev_mapping', serialize(self::$rev_mapping));
+    $me->setConfig('id_call_nicknames', serialize(self::$nicknames));
   }
 
   private static function validRecipients($myMemberId = null)
