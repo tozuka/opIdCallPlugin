@@ -5,22 +5,32 @@ class IdCallUtil
   const TEST = true;
 
   private static $rev_mapping = null;
+  private static $valid_recipients = null;
   private static $nicknames = null;
 
   private static function init()
   {
-    if (!is_null(self::$rev_mapping)) return;
+    // 初期化済
+    if (!is_null(self::$rev_mapping))
+    {
+      return;
+    }
 
-    // memberテーブルから、名前を取得
-    $rs = Doctrine::getTable('Member')
-      ->createQuery()
-      ->where('is_active = ? AND is_login_rejected = ?')
-      ->execute(array(1, 0));
+    // pc_frontend, mobile_frontend 以外の場合は何も行わない
+    $userInstanceName = version_compare(OPENPNE_VERSION, '3.5.0-dev', '>') ? 'opSecurityUser' : 'sfOpenPNESecurityUser';
+    if (!(sfContext::getInstance()->getUser() instanceof $userInstanceName))
+    {
+      return;
+    }
+
+    self::$rev_mapping = array();
+    self::$nicknames = array();
+    self::$valid_recipients = self::validRecipients();
 
     $mapping = array();
-    foreach ($rs as $member)
+    foreach (self::$valid_recipients as $memberId => $name)
     {
-      $mapping[$member->id] = self::split_ids($member->name);
+      $mapping[$memberId] = self::split_ids($name);
     }
     self::set_mapping($mapping, true); // ここの先頭項目を通知時の呼称とする
 
@@ -37,6 +47,46 @@ class IdCallUtil
     {
       self::load_mapping_from_profile($name);
     }
+  }
+
+  private static function validRecipients($myMemberId = null)
+  {
+    if (!$myMemberId)
+    {
+      $myMemberId = sfContext::getInstance()->getUser()->getMember()->getId();
+    }
+
+    // memberテーブルから、名前を取得
+    $rs = Doctrine::getTable('Member')
+      ->createQuery()
+      ->where('is_active = ? AND is_login_rejected = ?')
+      ->execute(array(1, 0));
+
+    $validRecipients = array();
+
+    foreach ($rs as $member)
+    {
+      if ($member->id == $myMemberId)
+      {
+        $validRecipients[(int)$member->id] = $member->name;
+        continue;
+      }
+
+      $relation = Doctrine::getTable('MemberRelationship')->retrieveByFromAndTo($myMemberId, $member->id);
+      if ($relation)
+      {
+        if ($relation->isAccessBlocked() || $relation->getIsAccessBlock())
+        {
+          continue;
+        }
+        if ($relation->isFriend())
+        {
+          $validRecipients[(int)$member->id] = $member->name;
+        }
+      }
+    }
+
+    return $validRecipients;
   }
 
   private static function split_ids($str)
@@ -72,12 +122,14 @@ class IdCallUtil
 
   public static function set_mapping($mapping, $useFirstOneAsNickname = true)
   {
-    foreach ($mapping as $person => $candidates)
+    foreach ($mapping as $memberId => $candidates)
     {
       if ($useFirstOneAsNickname)
       {
-        self::$nicknames[$person] = self::remove_suffix($candidates[0]);
+        self::$nicknames[(int)$memberId] = self::remove_suffix($candidates[0]);
       }
+
+      if (!isset(self::$valid_recipients[(int)$memberId])) continue;
 
       foreach ($candidates as $cand)
       {
@@ -85,11 +137,11 @@ class IdCallUtil
 
         if (isset(self::$rev_mapping[$cand]))
         {
-          self::$rev_mapping[$cand][] = $person;
+          self::$rev_mapping[$cand][] = $memberId;
         }
         else
         {
-          self::$rev_mapping[$cand] = array($person);
+          self::$rev_mapping[$cand] = array($memberId);
         }
       }
     }
@@ -202,8 +254,8 @@ class IdCallUtil
 
       foreach ($callees as $callee)
       {
-        $memberId = $callee[0];
-        $isKtai = $callee[1];
+        $memberId = (int)$callee[0];
+        $isKtai   = $callee[1];
 
         $member = Doctrine::getTable('Member')->find($memberId);
         if (!$member) continue;
