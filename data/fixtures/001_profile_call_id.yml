@@ -1,0 +1,20 @@
+Profile:
+  profile_call_id:
+    id: ~
+    is_required: 0
+    name: "call_id"
+    form_type: "input"
+    value_type: "string"
+    is_disp_regist: 1
+    is_disp_config: 1
+    is_disp_search: 1
+    is_edit_public_flag: 0
+    default_public_flag: 1
+    sort_order: 20
+    Translation:
+      ja_JP:
+        caption: "コールID"
+        info: "カンマ区切りで複数指定可"
+      en:
+        caption: "Call ID"
+        info: "Please separate ids with comma"

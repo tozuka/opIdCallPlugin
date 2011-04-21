@@ -1,7 +1,8 @@
 opIdCallPlugin
   - @+ID で呼ばれた人にメールでお知らせ
   - m@+ID で呼ばれた人に携帯メールでお知らせ
-  by tozuka@tejimaya.com
+  - 携帯メールへのお知らせに対しメールで返信
+  by tozuka@tejimaya.com + urabe@tejimaya.com
 
 ■sfFormObject へのパッチが必要です
 OpenPNE のルートディレクトリにて
@@ -12,3 +13,9 @@ opUpdateNotifierPluginなどの導入で既に同等のパッチが適用済み�
 ※以前のバージョンでopDiaryPlugin, opCommunityTopicPlugin等に手動パッチを適用している場合は、
 deprecated/PATCH_MEMO を参考に元に戻してください。
 （手動パッチは通知を行わない旧APIを利用しているため、残っていても実害はありません）
+
+■IDコール可能な相手リスト等の情報をキャッシュするようになりました。
+キャッシュのクリアは
+$ php symfony opIdCall:clear-cache
+で行います。
+

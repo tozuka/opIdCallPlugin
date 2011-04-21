@@ -1,0 +1,41 @@
+mail_op_id_call_diary_reply:
+  url: idc.d.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: diary }
+  required: { id: \d+ }
+
+mail_op_id_call_diary_comment_reply:
+  url: idc.dc.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: diaryComment }
+  required: { id: \d+ }
+
+mail_op_id_call_community_event_reply:
+  url: idc.ce.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: communityEvent }
+  required: { id: \d+ }
+
+mail_op_id_call_community_event_comment_reply:
+  url: idc.cec.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: communityEventComment }
+  required: { id: \d+ }
+
+mail_op_id_call_community_topic_reply:
+  url: idc.ct.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: communityTopic }
+  required: { id: \d+ }
+
+mail_op_id_call_community_topic_comment_reply:
+  url: idc.ctc.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: communityTopicComment }
+  required: { id: \d+ }
+
+mail_op_id_call_activity_reply:
+  url: idc.a.:id
+  class: opMailRoute
+  param: { module: opIdCall, action: activity }
+  required: { id: \d+ }

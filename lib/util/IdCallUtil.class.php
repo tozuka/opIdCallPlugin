@@ -5,22 +5,41 @@ class IdCallUtil
   const TEST = true;
 
   private static $rev_mapping = null;
+  private static $valid_recipients = null;
   private static $nicknames = null;
 
   private static function init()
   {
-    if (!is_null(self::$rev_mapping)) return;
+    // 初期化済
+    if (!is_null(self::$rev_mapping))
+    {
+      return;
+    }
 
-    // memberテーブルから、名前を取得
-    $rs = Doctrine::getTable('Member')
-      ->createQuery()
-      ->where('is_active = ? AND is_login_rejected = ?')
-      ->execute(array(1, 0));
+    // pc_frontend, mobile_frontend 以外の場合は何も行わない
+    $userInstanceName = version_compare(OPENPNE_VERSION, '3.5.0-dev', '>') ? 'opSecurityUser' : 'sfOpenPNESecurityUser';
+    if (!(sfContext::getInstance()->getUser() instanceof $userInstanceName))
+    {
+      return;
+    }
+
+    $me = sfContext::getInstance()->getUser()->getMember();
+    $rev_mapping_cache = $me->getConfig('id_call_rev_mapping');
+    if ($rev_mapping_cache)
+    {
+      self::$rev_mapping = unserialize($rev_mapping_cache);
+      self::$nicknames = unserialize($me->getConfig('id_call_nicknames'));
+      return;
+    }
+
+    self::$rev_mapping = array();
+    self::$nicknames = array();
+    self::$valid_recipients = self::validRecipients($me->getId());
 
     $mapping = array();
-    foreach ($rs as $member)
+    foreach (self::$valid_recipients as $memberId => $name)
     {
-      $mapping[$member->id] = self::split_ids($member->name);
+      $mapping[$memberId] = self::split_ids($name);
     }
     self::set_mapping($mapping, true); // ここの先頭項目を通知時の呼称とする
 
@@ -37,6 +56,49 @@ class IdCallUtil
     {
       self::load_mapping_from_profile($name);
     }
+
+    $me->setConfig('id_call_rev_mapping', serialize(self::$rev_mapping));
+    $me->setConfig('id_call_nicknames', serialize(self::$nicknames));
+  }
+
+  private static function validRecipients($myMemberId = null)
+  {
+    if (!$myMemberId)
+    {
+      $myMemberId = sfContext::getInstance()->getUser()->getMember()->getId();
+    }
+
+    // memberテーブルから、名前を取得
+    $rs = Doctrine::getTable('Member')
+      ->createQuery()
+      ->where('is_active = ? AND is_login_rejected = ?')
+      ->execute(array(1, 0));
+
+    $validRecipients = array();
+
+    foreach ($rs as $member)
+    {
+      if ($member->id == $myMemberId)
+      {
+        $validRecipients[(int)$member->id] = $member->name;
+        continue;
+      }
+
+      $relation = Doctrine::getTable('MemberRelationship')->retrieveByFromAndTo($myMemberId, $member->id);
+      if ($relation)
+      {
+        if ($relation->isAccessBlocked() || $relation->getIsAccessBlock())
+        {
+          continue;
+        }
+        if ($relation->isFriend())
+        {
+          $validRecipients[(int)$member->id] = $member->name;
+        }
+      }
+    }
+
+    return $validRecipients;
   }
 
   private static function split_ids($str)
@@ -75,12 +137,14 @@ class IdCallUtil
 
   public static function set_mapping($mapping, $useFirstOneAsNickname = true)
   {
-    foreach ($mapping as $person => $candidates)
+    foreach ($mapping as $memberId => $candidates)
     {
       if ($useFirstOneAsNickname)
       {
-        self::$nicknames[$person] = self::remove_suffix($candidates[0]);
+        self::$nicknames[(int)$memberId] = self::remove_suffix($candidates[0]);
       }
+
+      if (!isset(self::$valid_recipients[(int)$memberId])) continue;
 
       foreach ($candidates as $cand)
       {
@@ -88,11 +152,11 @@ class IdCallUtil
 
         if (isset(self::$rev_mapping[$cand]))
         {
-          self::$rev_mapping[$cand][] = $person;
+          self::$rev_mapping[$cand][] = $memberId;
         }
         else
         {
-          self::$rev_mapping[$cand] = array($person);
+          self::$rev_mapping[$cand] = array($memberId);
         }
       }
     }
@@ -175,7 +239,7 @@ class IdCallUtil
   }
 
   // テキストに含まれる＠コールを抽出し、本人っぽい人たちにお知らせ
-  public static function check_at_call($text, $place = null, $route = null, $author = null, $test_mode = false)
+  public static function check_at_call($text, $place = null, $route = null, $author = null, $reply_route_params = null, $test_mode = false)
   {
     self::init();
 
@@ -195,6 +259,7 @@ class IdCallUtil
     }
     else
     {
+      sfContext::getInstance()->getConfiguration()->loadHelpers('opIdCallUtil');
       $text_ = $author . '≫' . PHP_EOL;
 
       foreach (split("\n", $text) as $line)
@@ -204,8 +269,8 @@ class IdCallUtil
 
       foreach ($callees as $callee)
       {
-        $memberId = $callee[0];
-        $isKtai = $callee[1];
+        $memberId = (int)$callee[0];
+        $isKtai   = $callee[1];
 
         $member = Doctrine::getTable('Member')->find($memberId);
         if (!$member) continue;
@@ -218,6 +283,7 @@ class IdCallUtil
           'place' => $place,
           'route' => $route,
           'author' => $author,
+          'reply_to' => $isKtai ? op_id_call_generate_mail($reply_route_params, $member) : false,
         );
         opMailSend::sendTemplateMail(
           'idCall', $callee_mail_address,
@@ -235,6 +301,12 @@ class IdCallUtil
 
   public function processFormPostSave($event)
   {
+    $userInstanceName = version_compare(OPENPNE_VERSION, '3.5.0-dev', '>') ? 'opSecurityUser' : 'sfOpenPNESecurityUser';
+    if (!(sfContext::getInstance()->getUser() instanceof $userInstanceName))
+    {
+      return false;
+    }
+
     $form = $event->getSubject();
     $author = sfContext::getInstance()->getUser()->getMember()->getName();
     $i18n = sfContext::getInstance()->getI18N();
@@ -247,6 +319,9 @@ class IdCallUtil
         $text = $diary->body;
         $place = $author.'さんの'.$i18n->__('Diary');
         $route = '@diary_show?id='.$diary->id;
+        $reply_route_params = array('mail_op_id_call_diary_reply' => array(
+          'id' => $diary->id,
+        ));
         break;
 
       case 'DiaryCommentForm':
@@ -256,6 +331,9 @@ class IdCallUtil
         $text = $diaryComment->body;
         $place = $author.'さんの'.$i18n->__('Diary').$i18n->__('Comment');
         $route = '@diary_show?id='.$diary->id.'&comment_count='.$diary->countDiaryComments(true);
+        $reply_route_params = array('mail_op_id_call_diary_comment_reply' => array(
+          'id' => $diaryComment->id,
+        ));
         break;
 
       case 'CommunityEventForm':
@@ -264,6 +342,9 @@ class IdCallUtil
         $text = $communityEvent->body;
         $place = $i18n->__('Community Events').' '.$communityEvent->name;
         $route = '@communityEvent_show?id='.$communityEvent->getId();
+        $reply_route_params = array('mail_op_id_call_community_event_reply' => array(
+            'id' => $communityEvent->id,
+        ));
         break;
 
       case 'CommunityEventCommentForm':
@@ -273,6 +354,9 @@ class IdCallUtil
         $text = $communityEventComment->body;
         $place = $i18n->__('Community Events').' '.$communityEvent->name.' への'.$i18n->__('Comment');
         $route = '@communityEvent_show?id='.$communityEvent->getId();
+        $reply_route_params = array('mail_op_id_call_community_event_comment_reply' => array(
+          'id' => $communityEventComment->id,
+        ));
         break;
 
       case 'CommunityTopicForm':
@@ -281,6 +365,9 @@ class IdCallUtil
         $text = $communityTopic->body;
         $place = $i18n->__('Community Topics').' '.$communityTopics->name;
         $route = '@communityTopic_show?id='.$communityTopic->getId();
+        $reply_route_params = array('mail_op_id_call_community_topic_reply' => array(
+          'id' => $communityTopic->id,
+        ));
         break;
 
       case 'CommunityTopicCommentForm':
@@ -290,6 +377,9 @@ class IdCallUtil
         $text = $communityTopicComment->body;
         $place = $i18n->__('Community Topics').' '.$communityTopic->name.' への'.$i18n->__('Comment');
         $route = '@communityTopic_show?id='.$communityTopic->getId();
+        $reply_route_params = array('mail_op_id_call_community_topic_comment_reply' => array(
+          'id' => $communityTopicComment->id,
+        ));
         break;
 
       case 'ActivityDataForm':
@@ -298,6 +388,9 @@ class IdCallUtil
         $text = $activityData->body;
         $place = 'アクティビティ';
         $route = 'friend/showActivity';
+        $reply_route_params = array('mail_op_id_call_activity_reply' => array(
+          'id' => $activityData->id,
+        ));
         break;
 
       case 'KakiageForm':
@@ -313,11 +406,11 @@ class IdCallUtil
         break;
 
       default:
-        error_log('form.post_save event from '.get_class($form).' is not supported.');
+        //error_log('form.post_save event from '.get_class($form).' is not supported.');
         return;
     } 
 
-    IdCallUtil::check_at_call($text, $place, $route, $author);
+    IdCallUtil::check_at_call($text, $place, $route, $author, $reply_route_params);
   }
 
   public static function debug($msg)
