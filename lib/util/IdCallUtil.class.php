@@ -166,20 +166,31 @@ class IdCallUtil
       return array();
     }
 
-    preg_match_all('/(ktai|m|)@([-._0-9A-Za-z]+)/',
+    preg_match_all('/(ktai|m|)(@+)([-._0-9A-Za-z]+)/',
       $text, $matches1, PREG_PATTERN_ORDER);
 
-    preg_match_all('/(ktai|m|)[@＠]([-._0-9A-Za-z()０-９Ａ-Ｚａ-ｚぁ-んァ-ヴー一-龠]+)/u',
+    preg_match_all('/(ktai|m|)([@＠]+)([-._0-9A-Za-z()０-９Ａ-Ｚａ-ｚぁ-んァ-ヴー一-龠]+)/u',
       $text, $matches2, PREG_PATTERN_ORDER);
 
     $ktai = array_merge($matches1[1], $matches2[1]);
-    $matches = array_merge($matches1[2], $matches2[2]);
+    $atmarks = array_merge($matches1[2], $matches2[2]);
+    $matches = array_merge($matches1[3], $matches2[3]);
 
     $callees = array();
     foreach ($matches as $i => $match)
     {
-      $isKtai = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? true : false;
-      $callees[] = array(self::remove_suffix($match), $isKtai);
+      $level = mb_strlen($atmarks[$i]);
+      $body = self::remove_suffix($match);
+      if ($level >= 2)
+      {
+        $callees[] = array($body, true); //mobile
+        $callees[] = array($body, false); //PC
+      }
+      else
+      {
+        $isKtai = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? true : false;
+        $callees[] = array($body, $isKtai);
+      }
     }
 
     return $callees;
