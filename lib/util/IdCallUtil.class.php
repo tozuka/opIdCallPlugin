@@ -1,8 +1,51 @@
 <?php
 
+function http_post($url, $data)
+{
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  $response = curl_exec($ch);
+  curl_close($ch);
+
+  return $response;
+}
+
+function is_valid_phone_number($tel)
+{
+  if (!$tel) return false;
+
+  $len = strlen($tel);
+  return ((10 === $len || 11 === $len) && '0' === $tel[0]) ? true : false;
+}
+
+function pushcall($tel)
+{
+  $pushcallApi = sfConfig::get('app_id_call_pushcall_api', array());
+  if (!$pushcallApi) return;
+
+  $apiUrl    = $pushcallApi['url'];
+  $siteid    = $pushcallApi['siteid'];
+  $key       = $pushcallApi['key'];
+  //$resulturl = $pushcallApi['resulturl'];
+  $resulturl = null;
+
+  $data = sprintf('siteid=%s&key=%s&tel=%s', urlencode($siteid), urlencode($key), $tel);
+  if ($resulturl) $data .= '&'.urlencode($resulturl);
+
+  $json = http_post($apiUrl, $data);
+  if ($json) return json_decode($json);
+}
+
 class IdCallUtil
 {
   const TEST = true;
+
+  const PC_CALL     = 1;
+  const MOBILE_CALL = 2;
+  const PHONE_CALL  = 4;
 
   private static $rev_mapping = null;
   private static $valid_recipients = null;
@@ -166,7 +209,7 @@ class IdCallUtil
       return array();
     }
 
-    preg_match_all('/(ktai|m|)(@+)([-._0-9A-Za-z]+)/',
+    preg_match_all('/(ktai|m|)([@]+)([-._0-9A-Za-z]+)/',
       $text, $matches1, PREG_PATTERN_ORDER);
 
     preg_match_all('/(ktai|m|)([@＠]+)([-._0-9A-Za-z()０-９Ａ-Ｚａ-ｚぁ-んァ-ヴー一-龠]+)/u',
@@ -181,15 +224,23 @@ class IdCallUtil
     {
       $level = mb_strlen($atmarks[$i]);
       $body = self::remove_suffix($match);
+
+      // 一斉コールはレベル1のみ許容
+      if ('all' == $body) $level = 1;
+
+      if ($level >= 3)
+      {
+        $callees[] = array($body, self::PHONE_CALL);
+      }
       if ($level >= 2)
       {
-        $callees[] = array($body, true); //mobile
-        $callees[] = array($body, false); //PC
+        $callees[] = array($body, self::MOBILE_CALL);
+        $callees[] = array($body, self::PC_CALL);
       }
       else
       {
-        $isKtai = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? true : false;
-        $callees[] = array($body, $isKtai);
+        $targetChannel = ('ktai' === $ktai[$i] || 'm' === $ktai[$i]) ? self::MOBILE_CALL : self::PC_CALL;
+        $callees[] = array($body, $targetChannel);
       }
     }
 
@@ -211,16 +262,16 @@ class IdCallUtil
     foreach ($matches as $match)
     {
       $nickname = strtolower($match[0]);
-      $isKtai = $match[1];
+      $targetChannel = (int)$match[1];
       if (isset(self::$rev_mapping[$nickname]))
       {
         $persons = self::$rev_mapping[$nickname];
         foreach ($persons as $person)
         {
-          $key = ($isKtai ? 'm@' : '@').$person;
+          $key = $targetChannel.'@'.$person;
           if (!isset($checked[$key]))
           {
-            $calls[] = array($person, $isKtai);
+            $calls[] = array($person, $targetChannel);
             $checked[$key] = true;
           }
         }
@@ -278,26 +329,41 @@ class IdCallUtil
       foreach ($callees as $callee)
       {
         $memberId = (int)$callee[0];
-        $isKtai   = $callee[1];
+        $targetChannel = (int)$callee[1];
 
         $member = Doctrine::getTable('Member')->find($memberId);
         if (!$member) continue;
 
-        $callee_mail_address = $member->getConfig($isKtai ? 'mobile_address' : 'pc_address');
+        
+        if (self::PC_CALL === $targetChannel || self::MOBILE_CALL === $targetChannel)
+        {
+          $callee_mail_address = $member->getConfig(self::MOBILE_CALL === $targetChannel ? 'mobile_address' : 'pc_address');
 
-        $params = array(
-          'nickname' => self::$nicknames[$memberId],
-          'text' => $text_,
-          'place' => $place,
-          'route' => $route,
-          'author' => $author,
-          'reply_to' => $isKtai ? op_id_call_generate_mail($reply_route_params, $member) : false,
-        );
-        opMailSend::sendTemplateMail(
-          'idCall', $callee_mail_address,
-          opConfig::get('admin_mail_address'), $params
-        );
-        // error_log(sprintf('[DEBUG] send idcall message to #%d (%s)', $memberId, $callee_mail_address));
+          $params = array(
+            'nickname' => self::$nicknames[$memberId],
+            'text' => $text_,
+            'place' => $place,
+            'route' => $route,
+            'author' => $author,
+            'reply_to' => self::MOBILE_CALL === $targetChannel ? op_id_call_generate_mail($reply_route_params, $member) : false,
+          );
+          opMailSend::sendTemplateMail(
+            'idCall', $callee_mail_address,
+            opConfig::get('admin_mail_address'), $params
+          );
+          error_log(sprintf('[DEBUG] send idcall message to #%d (%s <%s>)', $memberId, self::$nicknames[$memberId], $callee_mail_address));
+        }
+
+        if (self::PHONE_CALL === $targetChannel)
+        {
+          $tel = Doctrine::getTable('MemberProfile')->retrieveByMemberIdAndProfileName($member->id, 'tel');
+          $tel = preg_replace('/[^0-9]/', '', $tel);
+          if (is_valid_phone_number($tel))
+          {
+            $result = pushcall($tel);
+            error_log(sprintf('[DEBUG] send idcall message to #%d (%s <%s>)', $memberId, self::$nicknames[$memberId], $tel));
+          }
+        }
       }
     }
   }
