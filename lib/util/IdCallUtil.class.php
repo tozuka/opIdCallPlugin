@@ -57,6 +57,24 @@ class IdCallUtil
       self::load_mapping_from_profile($name);
     }
 
+    // community_config にcall_id項目があれば、コミュニティ成員すべてに対するコールIDとして設定される
+    $rs = Doctrine::getTable('CommunityConfig')->createQuery()
+      ->select('community_id, value')
+      ->where('name = ?')
+      ->execute(array('call_id'));
+
+    $mapping = array();
+    foreach ($rs as $r)
+    {
+      $nicknames = self::split_ids($r['value']);
+      $community = Doctrine::getTable('Community')->find((int)$r['community_id']);
+      foreach ($community->getMembers() as $member)
+      {
+        $mapping[$member->id] = $nicknames;
+      }
+    }
+    self::set_mapping($mapping, false);
+
     $me->setConfig('id_call_rev_mapping', serialize(self::$rev_mapping));
     $me->setConfig('id_call_nicknames', serialize(self::$nicknames));
   }
