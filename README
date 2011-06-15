@@ -19,3 +19,15 @@ deprecated/PATCH_MEMO を参考に元に戻してください。
 $ php symfony opIdCall:clear-cache
 で行います。
 
+■コミュニティにコールIDを設定する
+lib/config/config/community_config.yml に以下のcall_idの項目を追加し、symfony ccして下さい。
+コミュニティ編集画面で追加したCall IDが、コミュニティ成員全員に対する一斉コールIDとして利用できるようになります。
+--------
+  call_id:
+    Name:       "call_id"
+    Caption:    "Call ID"
+    FormType:   "input"
+    ValueType:  "string"
+    IsUnique:   false
+    IsRequired: false
+--------
