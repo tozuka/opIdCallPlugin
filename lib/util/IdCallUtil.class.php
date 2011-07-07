@@ -25,6 +25,7 @@ class IdCallUtil
 
     $me = sfContext::getInstance()->getUser()->getMember();
     $rev_mapping_cache = $me->getConfig('id_call_rev_mapping');
+    //$rev_mapping_cache = null;
     if ($rev_mapping_cache)
     {
       self::$rev_mapping = unserialize($rev_mapping_cache);
@@ -45,6 +46,7 @@ class IdCallUtil
 
     // ymlファイルの設定を読み込んで追加
     $mapping = sfConfig::get('app_id_call_mapping', array());
+    //$mapping = null;
     if (!is_null($mapping))
     {
       self::set_mapping($mapping, false);
@@ -343,7 +345,7 @@ class IdCallUtil
         $diary = $form->getObject();
 
         $text = $diary->body;
-        $place = $author.'さんの'.$i18n->__('Diary');
+        $place = $diary->Member->getName().'さんの'.$i18n->__('Diary');
         $route = '@diary_show?id='.$diary->id;
         $reply_route_params = array('mail_op_id_call_diary_reply' => array(
           'id' => $diary->id,
@@ -355,7 +357,7 @@ class IdCallUtil
         $diary = $diaryComment->Diary;
 
         $text = $diaryComment->body;
-        $place = $author.'さんの'.$i18n->__('Diary').$i18n->__('Comment');
+        $place = $diary->Member->getName().'さんの'.$i18n->__('Diary').$i18n->__('Comment');
         $route = '@diary_show?id='.$diary->id.'&comment_count='.$diary->countDiaryComments(true);
         $reply_route_params = array('mail_op_id_call_diary_comment_reply' => array(
           'id' => $diaryComment->id,
