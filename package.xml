@@ -24,11 +24,11 @@ see http://openpne3.com/wiki/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3:opIdC
   <email />
   <active>yes</active>
  </lead>
- <date>2011-04-21</date>
- <time>13:29:49</time>
+ <date>2011-06-15</date>
+ <time>17:01:42</time>
  <version>
-  <release>0.8.2.1</release>
-  <api>0.8.2.1</api>
+  <release>0.8.3</release>
+  <api>0.8.3</api>
  </version>
  <stability>
   <release>beta</release>
@@ -36,14 +36,13 @@ see http://openpne3.com/wiki/%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3:opIdC
  </stability>
  <license>Apache</license>
  <notes>
-fixed sending ID-call from/to access-blocked members
+call id for community
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
    <file baseinstalldir="/" md5sum="0f0b05e459fd5976791367529db0c30b" name="apps/mobile_mail_frontend/config/routing.yml" role="data" />
    <file baseinstalldir="/" md5sum="2a51707b0b40dc318f4d6d9d321f29bc" name="apps/mobile_mail_frontend/modules/opIdCall/actions/actions.class.php" role="data" />
    <file baseinstalldir="/" md5sum="d41d8cd98f00b204e9800998ecf8427e" name="apps/mobile_mail_frontend/modules/opIdCall/templates/indexSuccess.php" role="data" />
-   <file baseinstalldir="/" md5sum="c6863d4f1cca8e7a2aa4b8a571dae46c" name="config/app.yml" role="data" />
    <file baseinstalldir="/" md5sum="547d132432a14b1f1e3747b0ea714eff" name="config/app.yml.sample" role="data" />
    <file baseinstalldir="/" md5sum="4ab4c0f6112f548810ce09e8f80484d6" name="config/config.php" role="data" />
    <file baseinstalldir="/" md5sum="818ebb4bb73f86102ddec0971803ce56" name="config/mail_template.yml" role="data" />
@@ -55,7 +54,7 @@ fixed sending ID-call from/to access-blocked members
    <file baseinstalldir="/" md5sum="0d4e9f9be653de3c02919b92785c2974" name="lib/form/MemberConfigForm/MemberConfigIdCallForm.class.php" role="data" />
    <file baseinstalldir="/" md5sum="c95f71d986f43924e8a2a2fe2760aa78" name="lib/helper/opIdCallUtilHelper.php" role="data" />
    <file baseinstalldir="/" md5sum="1c2a3c3ed337600b168d96c6af757287" name="lib/task/IdCallTask.class.php" role="data" />
-   <file baseinstalldir="/" md5sum="b70cfd88e0db0e3e9d7cbe1129ff90de" name="lib/util/IdCallUtil.class.php" role="data" />
+   <file baseinstalldir="/" md5sum="82ecff408214af80253087aee8c81460" name="lib/util/IdCallUtil.class.php" role="data" />
    <file baseinstalldir="/" md5sum="2c5d89b3c546e93925bada51b8d10c8a" name="lib/util/opIdCallToolKit.class.php" role="data" />
    <file baseinstalldir="/" md5sum="25b04d5e2306bbc79824f120dc88d181" name="test/bootstrap/database.php" role="data" />
    <file baseinstalldir="/" md5sum="2089e76b9d0ae0fd4d222ee37ea68cb5" name="test/bootstrap/functional.php" role="data" />
@@ -67,7 +66,7 @@ fixed sending ID-call from/to access-blocked members
    <file baseinstalldir="/" md5sum="0df724386a1c443a8708be1df36172fe" name="test/unit/util/IdCallUtilTest.php" role="data" />
    <file baseinstalldir="/" md5sum="37c2f437f8e6fc841e49ea2fcdf8ba81" name="form-post_save.patch" role="data" />
    <file baseinstalldir="/" md5sum="3b83ef96387f14655fc854ddc3c6bd57" name="LICENSE" role="data" />
-   <file baseinstalldir="/" md5sum="eac78bc5ca157c685b57a2b145606039" name="README" role="data" />
+   <file baseinstalldir="/" md5sum="2cab7609a7b25fb3cb016439e7722de1" name="README" role="data" />
    <file baseinstalldir="/" md5sum="cfe8c4f4d0f1facb1bf6c25a7185ecbd" name="TODO" role="data" />
   </dir>
  </contents>
@@ -141,6 +140,21 @@ supports mobile mail reply
    <license>Apache</license>
    <notes>
 fixed sending ID-call from/to access-blocked members
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>0.8.3</release>
+    <api>0.8.3</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-06-15</date>
+   <license>Apache</license>
+   <notes>
+call id for community
    </notes>
   </release>
  </changelog>
